@@ -1,113 +1,93 @@
-# This is the SAM template that represents the architecture of your serverless application
-# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
-
-# The AWSTemplateFormatVersion identifies the capabilities of the template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   covidspy-serverless
+Transform: AWS::Serverless-2016-10-31
 
-# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
-Transform:
-- AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Runtime: nodejs14.x
+    Timeout: 3
+    MemorySize: 2048
+    Architectures:
+      - x86_64
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowHeaders: "'*'"
+      AllowMethods: "'*'"
 
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-
-  # This is a Lambda function config associated with the source code: get-all-items.js
-  getAllItemsFunction:
+  GetSummaryFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/get-all-items.getAllItemsHandler
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Timeout: 100
-      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SampleTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref SampleTable
+      Handler: src/handlers/summary.handler
+      Description: Returns a distinct list of all locations
       Events:
-        Api:
+        SummaryApi:
           Type: Api
           Properties:
-            Path: /
+            RestApiId: !Ref CovidSpyApi
+            Path: /api/summary
             Method: GET
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-
-  # This is a Lambda function config associated with the source code: get-by-id.js
-  getByIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/get-by-id.getByIdHandler
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Timeout: 100
-      Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref SampleTable
+            TableName: covid_global_data
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref SampleTable
+          TABLE_NAME: covid_global_data
+  
+  GeTimeseriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/time-series.handler
+      Description: Returns timeseries data for the specified location or the world
       Events:
-        Api:
+        TimeseriesApi:
           Type: Api
           Properties:
-            Path: /{id}
+            RestApiId: !Ref CovidSpyApi
+            Path: /api/time-series
             Method: GET
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-
-  # This is a Lambda function config associated with the source code: put-item.js
-  putItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/put-item.putItemHandler
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Timeout: 100
-      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref SampleTable
+            TableName: covid_global_data
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref SampleTable
+          TABLE_NAME: covid_global_data
+
+  GetTableDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/table-data.handler
+      Description: Returns tabular data for currently selected location
       Events:
-        Api:
+        TimeseriesApi:
           Type: Api
           Properties:
-            Path: /
-            Method: POST
-  # Simple syntax to create a DynamoDB table with a single attribute primary key, more in
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesssimpletable
-
-  # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
-  SampleTable:
-    Type: AWS::Serverless::SimpleTable
+            RestApiId: !Ref CovidSpyApi
+            Path: /api/table-data
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: covid_global_data
+      Environment:
+        Variables:
+          TABLE_NAME: covid_global_data
+  
+  GetLocationsFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      PrimaryKey:
-        Name: id
-        Type: String
-      ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2
-
-Outputs:
-  WebEndpoint:
-    Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+      Handler: src/handlers/locations.handler
+      Description: Returns a distinct list of all locations
+      Events:
+        LocationsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CovidSpyApi
+            Path: /api/locations
+            Method: GET
+  CovidSpyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: CovidSpy Api
+      StageName: prod
