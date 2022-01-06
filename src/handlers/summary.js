@@ -9,7 +9,7 @@ exports.handler = async (event, context) => {
   try {
     const params = event.queryStringParameters;
     const country = params && params.location ? params.location : 'OWID_WRL';
-    const results = await covidData.getSummary(country);
+    const results = await covidData.getSummary(params);
 
     return {
       headers,
