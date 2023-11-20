@@ -7,8 +7,7 @@ const headers = {
 exports.handler = async (event, context) => {
   try {
     const params = event.queryStringParameters;
-    const country = params && params.location ? params.location : 'OWID_WRL';
-    const body = await covidData.getTimeSeries(country);
+    const body = await covidData.getTimeSeries(params);
     return {
       headers,
       statusCode: 200,

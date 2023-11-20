@@ -30,7 +30,7 @@ class CovidData {
     const country = options && options.location ? options.location : 'OWID_WRL';
     return new Promise((resolve, reject) => {
       const params = {
-        TableName: 'covid_global_data',
+        TableName: 'global_data',
         KeyConditionExpression: '#c = :country',
         ExpressionAttributeNames: { '#c': 'country' },
         ExpressionAttributeValues: {
@@ -75,8 +75,6 @@ class CovidData {
           Object.assign(results, {
             average7Days
           });
-          //this.getIncreases7Day(results);
-          //this.getIncreasesDaily(results);
 
           resolve(results);
         }
@@ -88,7 +86,7 @@ class CovidData {
     const country = options && options.location ? options.location : 'OWID_WRL';
     return new Promise((resolve, reject) => {
       const params = {
-        TableName: 'covid_global_data',
+        TableName: 'global_data',
         KeyConditionExpression: 'country = :country',
         ExpressionAttributeValues: {
           ':country': country
@@ -120,7 +118,7 @@ class CovidData {
     const country = options && options.location ? options.location : 'OWID_WRL';
     return new Promise((resolve, reject) => {
       const params = {
-        TableName: 'covid_global_data',
+        TableName: 'global_data',
         KeyConditionExpression: 'country = :country',
         ExpressionAttributeValues: {
           ':country': country

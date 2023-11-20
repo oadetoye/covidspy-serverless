@@ -31,10 +31,10 @@ Resources:
             Method: GET
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: covid_global_data
+            TableName: global_data
       Environment:
         Variables:
-          TABLE_NAME: covid_global_data
+          TABLE_NAME: global_data
   
   GeTimeseriesFunction:
     Type: AWS::Serverless::Function
@@ -50,10 +50,10 @@ Resources:
             Method: GET
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: covid_global_data
+            TableName: global_data
       Environment:
         Variables:
-          TABLE_NAME: covid_global_data
+          TABLE_NAME: global_data
 
   GetTableDataFunction:
     Type: AWS::Serverless::Function
@@ -69,10 +69,10 @@ Resources:
             Method: GET
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: covid_global_data
+            TableName: global_data
       Environment:
         Variables:
-          TABLE_NAME: covid_global_data
+          TABLE_NAME: global_data
   
   GetLocationsFunction:
     Type: AWS::Serverless::Function
